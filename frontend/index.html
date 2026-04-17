@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI电力交易系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            min-width: 250px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-circle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-circle {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .step-label {
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+        }
+
+        .step.active .step-label {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .result-success {
+            border-left: 4px solid #38ef7d;
+            background: #f0fff4;
+        }
+
+        .result-error {
+            border-left: 4px solid #fc5c65;
+            background: #fff5f5;
+        }
+
+        .result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-success .result-title {
+            color: #11998e;
+        }
+
+        .result-error .result-title {
+            color: #fc5c65;
+        }
+
+        .order-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-row:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge-buy {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-sell {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+
+        .history-time {
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .history-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- 头部 -->
+            <div class="header">
+                <h1>⚡ AI电力交易辅助系统</h1>
+                <p>基于多Agent智能协作的电力交易平台</p>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="card">
+                <div class="card-title">🎮 交易控制</div>
+                <div class="control-panel">
+                    <div class="input-group">
+                        <label>会话ID</label>
+                        <input 
+                            type="text" 
+                            v-model="sessionId" 
+                            placeholder="输入会话ID或留空自动生成"
+                        >
+                    </div>
+                    <button 
+                        class="btn-primary" 
+                        @click="startFullWorkflow"
+                        :disabled="loading"
+                    >
+                        🚀 启动完整工作流
+                    </button>
+                    <button 
+                        class="btn-success" 
+                        @click="startQuickTest"
+                        :disabled="loading"
+                    >
+                        ⚡ 快速测试
+                    </button>
+                    <button 
+                        class="btn-secondary" 
+                        @click="startAuditTest"
+                        :disabled="loading"
+                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"
+                    >
+                        🛡️ 审计拦截测试
+                    </button>
+                    <button 
+                        class="btn-secondary" 
+                        @click="checkStatus"
+                        :disabled="!currentSessionId || loading"
+                    >
+                        🔍 查询状态
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工作流进度 -->
+            <div class="card" v-if="workflowState">
+                <div class="card-title">📊 工作流进度</div>
+                <div class="step-indicator">
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 0,
+                            'completed': currentStepIndex > 0
+                        }"
+                    >
+                        <div class="step-circle">1</div>
+                        <div class="step-label">数据采集</div>
+                    </div>
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 1,
+                            'completed': currentStepIndex > 1
+                        }"
+                    >
+                        <div class="step-circle">2</div>
+                        <div class="step-label">电价预测</div>
+                    </div>
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 2,
+                            'completed': currentStepIndex > 2
+                        }"
+                    >
+                        <div class="step-circle">3</div>
+                        <div class="step-label">策略生成</div>
+                    </div>
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 3,
+                            'completed': currentStepIndex > 3
+                        }"
+                    >
+                        <div class="step-circle">4</div>
+                        <div class="step-label">审计校验</div>
+                    </div>
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 4,
+                            'completed': currentStepIndex > 4
+                        }"
+                    >
+                        <div class="step-circle">5</div>
+                        <div class="step-label">风控检查</div>
+                    </div>
+                    <div 
+                        class="step" 
+                        :class="{
+                            'active': currentStepIndex === 5,
+                            'completed': currentStepIndex > 5
+                        }"
+                    >
+                        <div class="step-circle">6</div>
+                        <div class="step-label">订单执行</div>
+                    </div>
+                </div>
+
+                <!-- 状态详情 -->
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">当前步骤</div>
+                        <div class="status-value">{{ workflowState.currentStep || '-' }}</div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.lastPrice">
+                        <div class="status-label">最新电价</div>
+                        <div class="status-value">{{ workflowState.data.lastPrice }} 元</div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.confidence">
+                        <div class="status-label">预测置信度</div>
+                        <div class="status-value">{{ (workflowState.data.confidence * 100).toFixed(1) }}%</div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.strategy">
+                        <div class="status-label">策略方向</div>
+                        <div class="status-value">
+                            <span 
+                                class="badge"
+                                :class="getOrderDirectionClass(workflowState.data.strategy)"
+                            >
+                                {{ getOrderDirection(workflowState.data.strategy) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.strategy">
+                        <div class="status-label">策略价格</div>
+                        <div class="status-value">{{ getOrderPrice(workflowState.data.strategy) }} 元</div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.strategy">
+                        <div class="status-label">策略电量</div>
+                        <div class="status-value">{{ getOrderVolume(workflowState.data.strategy) }} MWh</div>
+                    </div>
+                    <div class="status-item" v-if="workflowState.data.auditPassed !== undefined">
+                        <div class="status-label">审计结果</div>
+                        <div class="status-value">
+                            <span 
+                                class="badge"
+                                :class="workflowState.data.auditPassed ? 'badge-buy' : 'badge-sell'"
+                            >
+                                {{ workflowState.data.auditPassed ? '通过' : '拦截' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">会话ID</div>
+                        <div class="status-value" style="font-size: 0.9em;">{{ workflowState.sessionId }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载状态 -->
+            <div class="card" v-if="loading">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>{{ loadingMessage }}</p>
+                </div>
+            </div>
+
+            <!-- 交易结果 -->
+            <div class="card" v-if="tradeResult">
+                <div class="card-title">📋 交易结果</div>
+                <div 
+                    class="result-box"
+                    :class="{
+                        'result-success': tradeResult.success,
+                        'result-error': !tradeResult.success
+                    }"
+                >
+                    <div class="result-title">
+                        {{ tradeResult.success ? '✅ 交易成功' : '❌ 交易失败' }}
+                    </div>
+                    <p>{{ tradeResult.message }}</p>
+                    
+                    <div class="order-details" v-if="tradeResult.order">
+                        <div class="order-row">
+                            <span>交易方向：</span>
+                            <span>
+                                <span 
+                                    class="badge"
+                                    :class="tradeResult.order.direction === 'BUY' ? 'badge-buy' : 'badge-sell'"
+                                >
+                                    {{ tradeResult.order.direction === 'BUY' ? '买入' : '卖出' }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="order-row">
+                            <span>交易价格：</span>
+                            <strong>{{ tradeResult.order.price }} 元/kWh</strong>
+                        </div>
+                        <div class="order-row">
+                            <span>交易电量：</span>
+                            <strong>{{ tradeResult.order.volume }} MWh</strong>
+                        </div>
+                        <div class="order-row">
+                            <span>会话ID：</span>
+                            <span>{{ tradeResult.order.sessionId }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 历史记录 -->
+            <div class="card" v-if="history.length > 0">
+                <div class="card-title">📜 交易历史</div>
+                <div class="history-list">
+                    <div 
+                        class="history-item"
+                        v-for="(item, index) in history"
+                        :key="index"
+                        @click="viewHistory(item)"
+                    >
+                        <div class="history-time">{{ item.time }}</div>
+                        <div class="history-summary">
+                            <span>{{ item.sessionId }}</span>
+                            <span 
+                                class="badge"
+                                :class="item.success ? 'badge-buy' : 'badge-sell'"
+                            >
+                                {{ item.success ? '成功' : '失败' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div class="card" v-if="!workflowState && !loading && !tradeResult">
+                <div class="empty-state">
+                    <p style="font-size: 3em; margin-bottom: 15px;">🚀</p>
+                    <p style="font-size: 1.2em; margin-bottom: 10px;">欢迎使用AI电力交易系统</p>
+                    <p>点击"启动完整工作流"或"快速测试"开始交易</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    sessionId: '',
+                    currentSessionId: '',
+                    loading: false,
+                    loadingMessage: '',
+                    workflowState: null,
+                    tradeResult: null,
+                    history: [],
+                    apiBaseUrl: 'http://localhost:8080'
+                };
+            },
+            computed: {
+                currentStepIndex() {
+                    if (!this.workflowState || !this.workflowState.currentStep) return -1;
+                    
+                    const stepMap = {
+                        'DATA_COLLECTED': 0,
+                        'FORECAST_DONE': 1,
+                        'STRATEGY_DONE': 2,
+                        'AUDIT_DONE': 3,
+                        'RISK_CHECK': 4,
+                        'EXECUTED': 5,
+                        'FALLBACK': 2,
+                        'FAILED': 2,
+                        'AUDIT_REJECTED': 3,
+                        'REJECTED': 4,
+                        'ERROR': -1
+                    };
+                    
+                    return stepMap[this.workflowState.currentStep] || -1;
+                }
+            },
+            methods: {
+                getOrderDirection(strategy) {
+                    if (strategy && strategy.order) {
+                        return strategy.order.direction === 'BUY' ? '买入' : '卖出';
+                    } else if (strategy && strategy.direction) {
+                        return strategy.direction === 'BUY' ? '买入' : '卖出';
+                    }
+                    return '-';
+                },
+
+                getOrderDirectionClass(strategy) {
+                    if (strategy && strategy.order) {
+                        return strategy.order.direction === 'BUY' ? 'badge-buy' : 'badge-sell';
+                    } else if (strategy && strategy.direction) {
+                        return strategy.direction === 'BUY' ? 'badge-buy' : 'badge-sell';
+                    }
+                    return 'badge';
+                },
+
+                getOrderPrice(strategy) {
+                    if (strategy && strategy.order) {
+                        return parseFloat(strategy.order.price).toFixed(4);
+                    } else if (strategy && strategy.price) {
+                        return parseFloat(strategy.price).toFixed(4);
+                    }
+                    return '-';
+                },
+
+                getOrderVolume(strategy) {
+                    if (strategy && strategy.order) {
+                        return strategy.order.volume;
+                    } else if (strategy && strategy.volume) {
+                        return strategy.volume;
+                    }
+                    return '-';
+                },
+
+                async startFullWorkflow() {
+                    await this.startWorkflow('/trade/start');
+                },
+
+                async startAuditTest() {
+                    await this.startWorkflow('/trade/start-audit-test');
+                },
+
+                async startQuickTest() {
+                    await this.startWorkflow('/trade/test');
+                },
+
+                async startWorkflow(endpoint) {
+                    this.loading = true;
+                    this.loadingMessage = '正在启动工作流...';
+                    this.tradeResult = null;
+
+                    try {
+                        const params = this.sessionId ? `?sessionId=${this.sessionId}` : '';
+                        const response = await fetch(`${this.apiBaseUrl}${endpoint}${params}`, {
+                            method: 'POST'
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        this.tradeResult = result;
+                        this.currentSessionId = result.sessionId;
+                        
+                        // 添加到历史记录
+                        this.history.unshift({
+                            time: new Date().toLocaleString('zh-CN'),
+                            sessionId: result.sessionId,
+                            success: result.success,
+                            result: result
+                        });
+
+                        // 自动查询状态
+                        setTimeout(() => this.checkStatus(), 500);
+
+                    } catch (error) {
+                        console.error('请求失败:', error);
+                        this.tradeResult = {
+                            success: false,
+                            message: `请求失败: ${error.message}`,
+                            order: null
+                        };
+                    } finally {
+                        this.loading = false;
+                        this.loadingMessage = '';
+                    }
+                },
+
+                async checkStatus() {
+                    if (!this.currentSessionId) {
+                        console.warn('没有会话ID，无法查询状态');
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.loadingMessage = '正在查询状态...';
+
+                    try {
+                        const url = `${this.apiBaseUrl}/workflow/status?sessionId=${this.currentSessionId}`;
+                        console.log('查询状态URL:', url);
+                        
+                        const response = await fetch(url);
+                        console.log('响应状态:', response.status);
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const state = await response.json();
+                        console.log('查询到的状态数据:', state);
+                        console.log('状态数据类型:', typeof state);
+                        console.log('状态数据键:', Object.keys(state || {}));
+                        
+                        if (state && state.sessionId) {
+                            this.workflowState = state;
+                            console.log('状态更新成功，当前步骤:', state.currentStep);
+                        } else {
+                            console.warn('状态数据不完整或为空');
+                        }
+
+                    } catch (error) {
+                        console.error('查询状态失败:', error);
+                        console.error('错误详情:', error.message);
+                    } finally {
+                        console.log('设置 loading = false');
+                        this.loading = false;
+                        this.loadingMessage = '';
+                    }
+                },
+
+                viewHistory(item) {
+                    this.currentSessionId = item.sessionId;
+                    this.tradeResult = item.result;
+                    this.checkStatus();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
