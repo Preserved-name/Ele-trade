@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class RiskTool {
 
-    private static final double MAX_PRICE = 1.2;      // 价格上限（元/kWh）
+    private static final double MAX_PRICE = 500;      // 价格上限（元/kWh）
     private static final int MAX_VOLUME = 1000;        // 单笔电量上限（MWh）
-    private static final double MIN_PRICE = 0.1;       // 价格下限（元/kWh）
+    private static final double MIN_PRICE = 200;       // 价格下限（元/kWh）
 
     /**
      * 校验订单是否违反风控规则

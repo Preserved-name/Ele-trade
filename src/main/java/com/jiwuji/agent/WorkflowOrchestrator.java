@@ -111,7 +111,7 @@ public class WorkflowOrchestrator {
                 String.format("%.4f", proposal.order().price()));
             updateState(state, "STRATEGY_DONE", "strategy", proposal);
 
-            // Step 4.5: 审计 Agent 防幻觉校验（方案4核心亮点）
+            // Step 4.5: 审计 Agent 防幻觉校验
             log.info("[Step 4.5/6] 执行审计 Agent 防幻觉校验...");
             boolean auditPassed = auditAgent.verify(proposal, forecast.prices());
             updateState(state, "AUDIT_DONE", "auditPassed", auditPassed);

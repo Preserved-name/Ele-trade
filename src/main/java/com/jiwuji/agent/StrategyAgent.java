@@ -39,8 +39,8 @@ public class StrategyAgent {
             - 保留足够的缓冲仓位应对市场波动
             
             **风控红线（必须严格遵守）：**
-            - 价格下限：BUY/SELL价格不得低于 0.10 元/kWh
-            - 价格上限：BUY/SELL价格不得高于 1.20 元/kWh
+            - 价格下限：BUY/SELL价格不得低于 200 元/kWh
+            - 价格上限：BUY/SELL价格不得高于 500 元/kWh
             - 电量下限：单次交易量不得低于 100 MWh
             - 电量上限：单次交易量不得高于 500 MWh
             - 价格合理性：BUY价格不应显著高于当前市场价20%以上，SELL价格不应显著低于当前市场价20%以下
@@ -48,7 +48,7 @@ public class StrategyAgent {
             **交易策略逻辑：**
             
             1. **判断趋势**：
-               - 分析96点价格列表，判断整体趋势（上升/下降/震荡）
+               - 分析24点价格列表，判断整体趋势（上升/下降/震荡）
                - 找出价格最低点和最高点的时间段
             
             2. **BUY策略（建仓）**：
@@ -90,15 +90,14 @@ public class StrategyAgent {
             如果预测置信度低于0.6，请输出：{"action":"skip","reason":"置信度不足"}
             
             **示例输出：**
-            {"direction":"BUY","price":0.3850,"volume":300,"reason":"预测价格上涨，当前持仓较低，适度建仓"}
-            {"direction":"SELL","price":0.4920,"volume":250,"reason":"预测价格下跌，高位分批减仓避险"}
-            {"direction":"BUY","price":0.4100,"volume":200,"reason":"震荡行情，小幅补仓降低成本"}
+            {"direction":"BUY","price":350,"volume":300,"reason":"预测价格上涨，当前持仓较低，适度建仓"}
+            {"direction":"SELL","price":320,"volume":250,"reason":"预测价格下跌，高位分批减仓避险"}
+            {"direction":"BUY","price":330,"volume":200,"reason":"震荡行情，小幅补仓降低成本"}
             
             **重要提醒：**
             - 交易量宁可保守，不要激进
             - 始终考虑当前持仓水平
             - 目标是渐进式调整仓位，不是一步到位
-            - **生成订单前务必检查：价格在0.10-1.20之间，电量在100-500之间**
             
             不要输出任何其他内容，只输出JSON。
             """)
@@ -148,27 +147,20 @@ public class StrategyAgent {
     }
 
     /**
-     * 将96点价格列表格式化为带时间点的字符串
-     * 每15分钟一个点，从00:00到23:45
+     * 将24点价格列表格式化为带时间点的字符串
+     * 每小时一个点，从00:00到23:00
      */
     private String formatPricesWithTime(java.util.List<Double> prices) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         
-        // 只显示关键时间点：整点和半点，避免日志过长
-        int[] showIndexes = {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 
-                             48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92};
-        
-        for (int i : showIndexes) {
-            if (i < prices.size()) {
-                int hour = i / 4;
-                int minute = (i % 4) * 15;
-                String time = String.format("%02d:%02d", hour, minute);
-                double price = prices.get(i);
-                
-                if (sb.length() > 1) sb.append(", ");
-                sb.append(String.format("{\"time\":\"%s\",\"price\":%.4f}", time, price));
-            }
+        // 显示所有24个时间点
+        for (int i = 0; i < prices.size(); i++) {
+            String time = String.format("%02d:00", i);
+            double price = prices.get(i);
+            
+            if (sb.length() > 1) sb.append(", ");
+            sb.append(String.format("{\"time\":\"%s\",\"price\":%.2f}", time, price));
         }
         
         sb.append("]");

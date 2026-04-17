@@ -28,14 +28,14 @@ public class DataCollectorTool {
         Random rand = new Random();
         List<Double> loads = new ArrayList<>();
         
-        // 生成96点负荷曲线（每15分钟一个点，模拟日负荷）
-        for (int i = 0; i < 96; i++) {
+        // 生成24点负荷曲线（每小时一个点，模拟日负荷）
+        for (int i = 0; i < 24; i++) {
             // 基础负荷5000MW + 随机波动
-            double baseLoad = 5000 + 1000 * Math.sin(i * 2 * Math.PI / 96);
+            double baseLoad = 5000 + 1000 * Math.sin(i * 2 * Math.PI / 24);
             loads.add(baseLoad + rand.nextInt(500));
         }
         
-        double lastPrice = 0.42 + rand.nextDouble() * 0.1;
+        double lastPrice = 320 + rand.nextDouble();
         
         return new MarketData(region, loads, lastPrice);
     }

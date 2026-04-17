@@ -29,6 +29,18 @@ spring.ai:
         model: deepseek-chat
         temperature: 0.1
 
+
+model:
+  enabled: false
+  fallback:
+    enabled: true
+
+excel:
+  data:
+    path: classpath:data/history_price.xlsx
+    time-slot-column: 1
+    avg-price-column: 9
+
 logging:
   level:
     root: INFO

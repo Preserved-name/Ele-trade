@@ -46,3 +46,15 @@ logs/
 *.zip
 *.tar.gz
 *.rar
+
+# ONNX Model files (large binary files)
+*.onnx
+src/main/resources/models/*.onnx
+
+# Python virtual environment
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
