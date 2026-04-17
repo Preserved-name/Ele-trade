@@ -1,4 +1,4 @@
-package com.jiwuji.config;
+package com.jiewuji.config;
 
 import dev.langchain4j.model.dashscope.QwenChatModel;
 import org.springframework.beans.factory.annotation.Value;

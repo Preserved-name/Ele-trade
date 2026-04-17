@@ -1,6 +1,6 @@
-package com.jiwuji.agent;
+package com.jiewuji.agent;
 
-import com.jiwuji.model.*;
+import com.jiewuji.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -100,7 +100,7 @@ public class WorkflowOrchestrator {
                     originalOrder.volume(),
                     originalOrder.sessionId()
                 );
-                proposal = new com.jiwuji.model.TradeProposal(tamperedOrder, proposal.confidence(), proposal.isValid());
+                proposal = new com.jiewuji.model.TradeProposal(tamperedOrder, proposal.confidence(), proposal.isValid());
                 log.warn("[测试模式] 人为篡改订单价格: {} -> {} (用于测试审计拦截)", 
                     originalOrder.price(), anomalousPrice);
             }

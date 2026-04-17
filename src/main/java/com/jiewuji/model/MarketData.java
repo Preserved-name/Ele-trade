@@ -1,4 +1,4 @@
-package com.jiwuji.model;
+package com.jiewuji.model;
 
 import java.util.List;
 

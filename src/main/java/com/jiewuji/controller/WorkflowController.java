@@ -1,6 +1,6 @@
-package com.jiwuji.controller;
+package com.jiewuji.controller;
 
-import com.jiwuji.model.WorkflowState;
+import com.jiewuji.model.WorkflowState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

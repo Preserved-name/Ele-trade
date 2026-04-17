@@ -1,6 +1,6 @@
-package com.jiwuji.agent;
+package com.jiewuji.agent;
 
-import com.jiwuji.model.MarketData;
+import com.jiewuji.model.MarketData;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 

@@ -1,12 +1,12 @@
-package com.jiwuji.agent;
+package com.jiewuji.agent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jiwuji.model.ForecastResult;
-import com.jiwuji.model.Order;
-import com.jiwuji.model.Portfolio;
-import com.jiwuji.model.TradeProposal;
+import com.jiewuji.model.ForecastResult;
+import com.jiewuji.model.Order;
+import com.jiewuji.model.Portfolio;
+import com.jiewuji.model.TradeProposal;
 import dev.langchain4j.model.dashscope.QwenChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.SystemMessage;

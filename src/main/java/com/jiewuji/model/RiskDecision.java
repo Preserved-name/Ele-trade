@@ -1,4 +1,4 @@
-package com.jiwuji.model;
+package com.jiewuji.model;
 
 /**
  * 风控决策模型

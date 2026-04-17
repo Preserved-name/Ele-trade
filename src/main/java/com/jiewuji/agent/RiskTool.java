@@ -1,7 +1,7 @@
-package com.jiwuji.agent;
+package com.jiewuji.agent;
 
-import com.jiwuji.model.Order;
-import com.jiwuji.model.RiskDecision;
+import com.jiewuji.model.Order;
+import com.jiewuji.model.RiskDecision;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 

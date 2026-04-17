@@ -1,7 +1,7 @@
-package com.jiwuji.controller;
+package com.jiewuji.controller;
 
-import com.jiwuji.agent.WorkflowOrchestrator;
-import com.jiwuji.model.TradeResult;
+import com.jiewuji.agent.WorkflowOrchestrator;
+import com.jiewuji.model.TradeResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
-package com.jiwuji.agent;
+package com.jiewuji.agent;
 
-import com.jiwuji.model.ForecastResult;
+import com.jiewuji.model.ForecastResult;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.SystemMessage;

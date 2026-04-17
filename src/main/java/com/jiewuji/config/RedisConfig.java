@@ -1,4 +1,4 @@
-package com.jiwuji.config;
+package com.jiewuji.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

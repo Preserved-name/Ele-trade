@@ -1,4 +1,4 @@
-package com.jiwuji.model;
+package com.jiewuji.model;
 
 /**
  * 交易订单模型
