@@ -17,7 +17,7 @@ spring:
 ai:
   dashscope:
     api-key: ${ALI_API_KEY:}
-    model-name: ${DASHSCOPE_MODEL_NAME:qwen-plus}
+    model-name: ${DASHSCOPE_MODEL_NAME:qwen-max}
 
 
 spring.ai:

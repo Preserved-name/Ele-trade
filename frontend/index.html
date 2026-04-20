@@ -394,6 +394,22 @@
                     >
                         🔍 查询状态
                     </button>
+                    <button 
+                        class="btn-secondary" 
+                        @click="checkModelInfo"
+                        :disabled="loading"
+                        style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"
+                    >
+                        🤖 查看模型信息
+                    </button>
+                    <button 
+                        class="btn-secondary" 
+                        @click="toggleChat"
+                        :disabled="loading"
+                        style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);"
+                    >
+                        💬 AI对话
+                    </button>
                 </div>
             </div>
 
@@ -589,6 +605,93 @@
                 </div>
             </div>
 
+            <!-- AI对话窗口 -->
+            <div class="card" v-if="showChat">
+                <div class="card-title">💬 与大模型直接对话</div>
+                
+                <!-- 聊天记录 -->
+                <div class="chat-history" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;">
+                    <div v-if="chatMessages.length === 0" style="text-align: center; padding: 20px; color: #999;">
+                        <p>👋 开始与AI对话吧！</p>
+                    </div>
+                    <div v-for="(msg, index) in chatMessages" :key="index" style="margin-bottom: 15px;">
+                        <!-- 用户消息 -->
+                        <div v-if="msg.role === 'user'" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 16px; border-radius: 12px 12px 0 12px; max-width: 70%; word-wrap: break-word;">
+                                {{ msg.content }}
+                            </div>
+                        </div>
+                        <!-- AI回复 -->
+                        <div v-else style="display: flex; justify-content: flex-start; margin-bottom: 10px;">
+                            <div style="background: #f0f0f0; color: #333; padding: 12px 16px; border-radius: 12px 12px 12px 0; max-width: 70%; word-wrap: break-word;">
+                                <div style="white-space: pre-wrap;">{{ msg.content }}</div>
+                                <div style="font-size: 0.75em; color: #999; margin-top: 5px;">{{ msg.time }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 加载状态 -->
+                    <div v-if="chatLoading" style="display: flex; justify-content: flex-start;">
+                        <div style="background: #f0f0f0; padding: 12px 16px; border-radius: 12px 12px 12px 0;">
+                            <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 输入框 -->
+                <div style="display: flex; gap: 10px;">
+                    <input 
+                        type="text" 
+                        v-model="chatInput" 
+                        @keyup.enter="sendMessage"
+                        placeholder="输入您的问题..."
+                        :disabled="chatLoading"
+                        style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;"
+                    >
+                    <button 
+                        @click="sendMessage" 
+                        :disabled="!chatInput.trim() || chatLoading"
+                        class="btn-primary"
+                        style="padding: 12px 24px;"
+                    >
+                        发送
+                    </button>
+                    <button 
+                        @click="clearChat" 
+                        class="btn-secondary"
+                        style="padding: 12px 24px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);"
+                    >
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <!-- 模型信息 -->
+            <div class="card" v-if="modelInfo">
+                <div class="card-title">🤖 大模型配置信息</div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">AI提供商</div>
+                        <div class="status-value">{{ modelInfo.provider }}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">模型名称</div>
+                        <div class="status-value" style="font-size: 1em;">{{ modelInfo.modelName }}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">AI框架</div>
+                        <div class="status-value">{{ modelInfo.framework }}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Temperature</div>
+                        <div class="status-value">{{ modelInfo.temperature }}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">查询时间</div>
+                        <div class="status-value" style="font-size: 0.85em;">{{ modelInfo.timestamp }}</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 空状态 -->
             <div class="card" v-if="!workflowState && !loading && !tradeResult">
                 <div class="empty-state">
@@ -612,6 +715,11 @@
                     loadingMessage: '',
                     workflowState: null,
                     tradeResult: null,
+                    modelInfo: null,
+                    showChat: false,
+                    chatMessages: [],
+                    chatInput: '',
+                    chatLoading: false,
                     history: [],
                     apiBaseUrl: 'http://localhost:8080'
                 };
@@ -775,6 +883,108 @@
                     this.currentSessionId = item.sessionId;
                     this.tradeResult = item.result;
                     this.checkStatus();
+                },
+
+                async checkModelInfo() {
+                    this.loading = true;
+                    this.loadingMessage = '正在查询模型信息...';
+                    this.modelInfo = null;
+
+                    try {
+                        const response = await fetch(`${this.apiBaseUrl}/trade/model-info`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('模型信息:', data);
+                        
+                        if (data.success) {
+                            this.modelInfo = data;
+                        } else {
+                            console.error('获取模型信息失败:', data.error);
+                            alert('获取模型信息失败: ' + data.error);
+                        }
+
+                    } catch (error) {
+                        console.error('请求失败:', error);
+                        alert('请求失败: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                        this.loadingMessage = '';
+                    }
+                },
+
+                toggleChat() {
+                    this.showChat = !this.showChat;
+                },
+
+                async sendMessage() {
+                    if (!this.chatInput.trim() || this.chatLoading) return;
+
+                    const userMessage = this.chatInput.trim();
+                    this.chatInput = '';
+                    
+                    // 添加用户消息到聊天记录
+                    this.chatMessages.push({
+                        role: 'user',
+                        content: userMessage
+                    });
+
+                    this.chatLoading = true;
+
+                    try {
+                        const response = await fetch(`${this.apiBaseUrl}/trade/chat`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ message: userMessage })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.chatMessages.push({
+                                role: 'assistant',
+                                content: data.message,
+                                time: data.timestamp
+                            });
+                        } else {
+                            this.chatMessages.push({
+                                role: 'assistant',
+                                content: '❌ 错误: ' + data.error,
+                                time: new Date().toLocaleString('zh-CN')
+                            });
+                        }
+
+                    } catch (error) {
+                        console.error('对话失败:', error);
+                        this.chatMessages.push({
+                            role: 'assistant',
+                            content: '❌ 请求失败: ' + error.message,
+                            time: new Date().toLocaleString('zh-CN')
+                        });
+                    } finally {
+                        this.chatLoading = false;
+                        
+                        // 滚动到底部
+                        this.$nextTick(() => {
+                            const chatHistory = document.querySelector('.chat-history');
+                            if (chatHistory) {
+                                chatHistory.scrollTop = chatHistory.scrollHeight;
+                            }
+                        });
+                    }
+                },
+
+                clearChat() {
+                    this.chatMessages = [];
                 }
             }
         }).mount('#app');
