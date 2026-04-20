@@ -81,7 +81,7 @@ public class PriceForecastTool {
     /**
      * 预测未来24小时电价
      * 
-     * @param loadProfile 负荷曲线（暂时不使用，保留接口兼容性）
+     * @param loadProfile 负荷曲线数据（从Excel导入的24小时电价数据）
      * @return 预测结果（24小时价格列表和置信度）
      */
     @Tool(description = "基于历史数据预测未来24小时电价，返回价格列表和置信度")
@@ -89,8 +89,18 @@ public class PriceForecastTool {
         try {
             log.info("开始电价预测...");
             
-            // 1. 获取历史数据
-            String historicalData = excelDataReader.getFormattedHistoricalData();
+            // 1. 构建预测用的历史数据
+            String historicalData;
+            if (loadProfile != null && !loadProfile.isEmpty()) {
+                // 使用传入的负荷曲线数据（已从Excel导入）
+                log.info("使用传入的负荷曲线数据进行预测，数据点数: {}", loadProfile.size());
+                historicalData = buildHistoricalDataFromLoadProfile(loadProfile);
+            } else {
+                // 如果没有传入数据，从Excel读取
+                log.info("未传入负荷曲线，从Excel读取历史数据");
+                historicalData = excelDataReader.getFormattedHistoricalData();
+            }
+            
             log.debug("历史数据: {}", historicalData);
             
             if (historicalData.equals("无历史数据")) {
@@ -111,6 +121,22 @@ public class PriceForecastTool {
             // 降级：返回基于历史数据的简单统计
             return fallbackForecast();
         }
+    }
+    
+    /**
+     * 从负荷曲线数据构建历史数据字符串
+     */
+    private String buildHistoricalDataFromLoadProfile(List<Double> loadProfile) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("最新一天电价数据：\n");
+        
+        for (int i = 0; i < Math.min(24, loadProfile.size()); i++) {
+            String timeSlot = String.format("%d-%d时", i, i + 1);
+            double price = loadProfile.get(i);
+            sb.append(String.format("时段: %s, 成交均价: %.2f 元/兆瓦时\n", timeSlot, price));
+        }
+        
+        return sb.toString();
     }
     
     /**
